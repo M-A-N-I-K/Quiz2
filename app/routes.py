@@ -123,7 +123,7 @@ def get_salary_distribution():
         {'range': '75k-100k', 'min': 75000, 'max': 100000, 'count': 0},
         {'range': '100k-125k', 'min': 100000, 'max': 125000, 'count': 0},
         {'range': '125k-150k', 'min': 125000, 'max': 150000, 'count': 0},
-        {'range': '150k+', 'min': 150000, 'max': float('inf'), 'count': 0}
+        {'range': '150k+', 'min': 150000, 'max': 99999999, 'count': 0}
     ]
     
     for salary in salary_data:
@@ -164,7 +164,7 @@ def get_tenure_distribution():
         {'range': '2-3 years', 'min': 2, 'max': 3, 'count': 0},
         {'range': '3-4 years', 'min': 3, 'max': 4, 'count': 0},
         {'range': '4-5 years', 'min': 4, 'max': 5, 'count': 0},
-        {'range': '5+ years', 'min': 5, 'max': float('inf'), 'count': 0}
+        {'range': '5+ years', 'min': 5, 'max': 9999999999999, 'count': 0}
     ]
     
     for emp in tenure_data:
