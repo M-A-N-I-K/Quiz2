@@ -1,0 +1,201 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Employee Data API",
+    "description": "API for employee data generation and visualization",
+    "version": "1.0"
+  },
+  "basePath": "/",
+  "schemes": [
+    "http"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/generate-data": {
+      "post": {
+        "summary": "Generate employee data",
+        "description": "Generates synthetic employee and department data",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "num_employees": {
+                  "type": "integer",
+                  "description": "Number of employees to generate",
+                  "default": 100
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Data successfully generated"
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/api/employees": {
+      "get": {
+        "summary": "Get all employees",
+        "description": "Returns a paginated list of all employees",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "integer",
+            "description": "Page number",
+            "default": 1
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "type": "integer",
+            "description": "Items per page",
+            "default": 10
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of employees"
+          }
+        }
+      }
+    },
+    "/api/employees/{id}": {
+      "get": {
+        "summary": "Get employee by ID",
+        "description": "Returns a single employee by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Employee ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Employee details"
+          },
+          "404": {
+            "description": "Employee not found"
+          }
+        }
+      }
+    },
+    "/api/departments": {
+      "get": {
+        "summary": "Get all departments",
+        "description": "Returns a list of all departments",
+        "responses": {
+          "200": {
+            "description": "A list of departments"
+          }
+        }
+      }
+    },
+    "/api/departments/{id}/employees": {
+      "get": {
+        "summary": "Get employees by department",
+        "description": "Returns all employees in a specific department",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Department ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Department and its employees"
+          },
+          "404": {
+            "description": "Department not found"
+          }
+        }
+      }
+    },
+    "/api/analytics/employees-by-department": {
+      "get": {
+        "summary": "Employees by department analytics",
+        "description": "Returns employee count per department",
+        "responses": {
+          "200": {
+            "description": "Employee count by department"
+          }
+        }
+      }
+    },
+    "/api/analytics/salary-distribution": {
+      "get": {
+        "summary": "Salary distribution analytics",
+        "description": "Returns salary distribution statistics",
+        "responses": {
+          "200": {
+            "description": "Salary distribution data"
+          }
+        }
+      }
+    },
+    "/api/analytics/tenure-distribution": {
+      "get": {
+        "summary": "Tenure distribution analytics",
+        "description": "Returns employee tenure distribution",
+        "responses": {
+          "200": {
+            "description": "Tenure distribution data"
+          }
+        }
+      }
+    },
+    "/api/analytics/performance-by-department": {
+      "get": {
+        "summary": "Performance by department analytics",
+        "description": "Returns average performance rating by department",
+        "responses": {
+          "200": {
+            "description": "Performance by department data"
+          }
+        }
+      }
+    },
+    "/api/visualizations/employees-by-department": {
+      "get": {
+        "summary": "Employees by department visualization",
+        "description": "Returns a chart showing employee count by department",
+        "responses": {
+          "200": {
+            "description": "Chart data and image"
+          }
+        }
+      }
+    },
+    "/api/visualizations/salary-distribution": {
+      "get": {
+        "summary": "Salary distribution visualization",
+        "description": "Returns a chart showing salary distribution",
+        "responses": {
+          "200": {
+            "description": "Chart data and image"
+          }
+        }
+      }
+    }
+  }
+}

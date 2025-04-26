@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Data Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            padding-top: 20px;
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">Employee Data Dashboard</h1>
+        
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Data Generation</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="generateForm">
+                            <div class="mb-3">
+                                <label for="numEmployees" class="form-label">Number of Employees</label>
+                                <input type="number" class="form-control" id="numEmployees" value="100" min="10" max="1000">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Generate Data</button>
+                        </form>
+                        <div id="generateResult" class="mt-3"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Employee Statistics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="statsLoading">Loading statistics...</div>
+                        <div id="employeeStats" class="d-none">
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="card bg-light mb-3">
+                                        <div class="card-body text-center">
+                                            <h5 class="card-title">Total Employees</h5>
+                                            <h2 id="totalEmployees">0</h2>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="card bg-light mb-3">
+                                        <div class="card-body text-center">
+                                            <h5 class="card-title">Departments</h5>
+                                            <h2 id="totalDepartments">0</h2>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h5 class="card-title">Avg Salary</h5>
+                                            <h2 id="avgSalary">$0</h2>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h5 class="card-title">Avg Performance</h5>
+                                            <h2 id="avgPerformance">0.0</h2>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Employees by Department</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="deptChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Salary Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="salaryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Performance by Department</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="performanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Tenure Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="tenureChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>API Documentation</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Explore the API using the Swagger UI:</p>
+                        <a href="/swagger" class="btn btn-primary" target="_blank">Open Swagger UI</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize the dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if data exists and load visualizations
+            checkDataAndLoadDashboard();
+            
+            // Handle generate data form submission
+            document.getElementById('generateForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                generateData();
+            });
+        });
+        
+        // Check if data exists and load dashboard
+        async function checkDataAndLoadDashboard() {
+            try {
+                const response = await fetch('/api/employees?per_page=1');
+                const data = await response.json();
+                
+                if (data.meta.total_items > 0) {
+                    loadDashboard();
+                } else {
+                    document.getElementById('statsLoading').textContent = 'No data available. Generate data to view statistics.';
+                }
+            } catch (error) {
+                console.error('Error checking data:', error);
+                document.getElementById('statsLoading').textContent = 'Error loading data. Please try again.';
+            }
+        }
+        
+        // Generate employee data
+        async function generateData() {
+            const numEmployees = document.getElementById('numEmployees').value;
+            const resultDiv = document.getElementById('generateResult');
+            
+            resultDiv.innerHTML = '<div class="alert alert-info">Generating data...</div>';
+            
+            try {
+                const response = await fetch('/api/generate-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ num_employees: parseInt(numEmployees) })
+                });
+                
+                const data = await response.json();
+                resultDiv.innerHTML = `<div class="alert alert-success">Successfully generated ${data.employee_count} employee records.</div>`;
+                
+                // Load dashboard after generating data
+                loadDashboard();
+            } catch (error) {
+                console.error('Error generating data:', error);
+                resultDiv.innerHTML = '<div class="alert alert-danger">Error generating data. Please try again.</div>';
+            }
+        }
+        
+        // Load all dashboard components
+        async function loadDashboard() {
+            loadStats();
+            loadDepartmentChart();
+            loadSalaryChart();
+            loadPerformanceChart();
+            loadTenureChart();
+        }
+        
+        // Load statistics
+        async function loadStats() {
+            try {
+                // Get employee count
+                const empResponse = await fetch('/api/employees?per_page=1');
+                const empData = await empResponse.json();
+                
+                // Get department count
+                const deptResponse = await fetch('/api/departments');
+                const deptData = await deptResponse.json();
+                
+                // Get salary data
+                const salaryResponse = await fetch('/api/analytics/salary-distribution');
+                const salaryData = await salaryResponse.json();
+                
+                // Get performance data
+                const perfResponse = await fetch('/api/analytics/performance-by-department');
+                const perfData = await perfResponse.json();
+                
+                // Calculate average performance
+                let totalPerf = 0;
+                let totalEmps = 0;
+                perfData.forEach(dept => {
+                    totalPerf += dept.average_performance * dept.employee_count;
+                    totalEmps += dept.employee_count;
+                });
+                const avgPerf = totalEmps > 0 ? (totalPerf / totalEmps).toFixed(1) : '0.0';
+                
+                // Update UI
+                document.getElementById('totalEmployees').textContent = empData.meta.total_items;
+                document.getElementById('totalDepartments').textContent = deptData.length;
+                document.getElementById('avgSalary').textContent = Math.round(salaryData.statistics.average_salary).toLocaleString();
+                document.getElementById('avgPerformance').textContent = avgPerf;
+                
+                // Show stats
+                document.getElementById('statsLoading').classList.add('d-none');
+                document.getElementById('employeeStats').classList.remove('d-none');
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                document.getElementById('statsLoading').textContent = 'Error loading statistics. Please try again.';
+            }
+        }
+        
+        // Load department chart
+        async function loadDepartmentChart() {
+            try {
+                const response = await fetch('/api/analytics/employees-by-department');
+                const data = await response.json();
+                
+                const ctx = document.getElementById('deptChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.map(item => item.department),
+                        datasets: [{
+                            label: 'Number of Employees',
+                            data: data.map(item => item.employee_count),
+                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading department chart:', error);
+            }
+        }
+        
+        // Load salary chart
+        async function loadSalaryChart() {
+            try {
+                const response = await fetch('/api/analytics/salary-distribution');
+                const data = await response.json();
+                
+                const ctx = document.getElementById('salaryChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.distribution.map(item => item.range),
+                        datasets: [{
+                            label: 'Number of Employees',
+                            data: data.distribution.map(item => item.count),
+                            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading salary chart:', error);
+            }
+        }
+        
+        // Load performance chart
+        async function loadPerformanceChart() {
+            try {
+                const response = await fetch('/api/analytics/performance-by-department');
+                const data = await response.json();
+                
+                const ctx = document.getElementById('performanceChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.map(item => item.department),
+                        datasets: [{
+                            label: 'Average Performance Rating',
+                            data: data.map(item => item.average_performance),
+                            backgroundColor: 'rgba(153, 102, 255, 0.6)',
+                            borderColor: 'rgba(153, 102, 255, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 5
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading performance chart:', error);
+            }
+        }
+        
+        // Load tenure chart
+        async function loadTenureChart() {
+            try {
+                const response = await fetch('/api/analytics/tenure-distribution');
+                const data = await response.json();
+                
+                const ctx = document.getElementById('tenureChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.distribution.map(item => item.range),
+                        datasets: [{
+                            label: 'Number of Employees',
+                            data: data.distribution.map(item => item.count),
+                            backgroundColor: 'rgba(255, 159, 64, 0.6)',
+                            borderColor: 'rgba(255, 159, 64, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading tenure chart:', error);
+            }
+        }
+    </script>
+</body>
+</html>

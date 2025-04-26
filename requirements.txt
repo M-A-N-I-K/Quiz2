@@ -1,0 +1,11 @@
+Flask==2.2.3
+Werkzeug==2.2.3
+Flask-SQLAlchemy==3.0.3
+Flask-RESTful==0.3.9
+Flask-Migrate==4.0.4
+Faker==18.9.0
+python-dotenv==1.0.0
+flask-swagger-ui==4.11.1
+matplotlib==3.7.1
+pandas==2.0.0
+numpy==1.26.4
